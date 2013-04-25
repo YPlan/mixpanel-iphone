@@ -106,8 +106,6 @@ static Mixpanel *sharedInstance = nil;
     [properties setValue:[NSNumber numberWithInt:(int)size.height] forKey:@"$screen_height"];
     [properties setValue:[NSNumber numberWithInt:(int)size.width] forKey:@"$screen_width"];
 
-    [properties setValue:[NSNumber numberWithBool:[Mixpanel wifiAvailable]] forKey:@"$wifi"];
-
     CTTelephonyNetworkInfo *networkInfo = [[[CTTelephonyNetworkInfo alloc] init] autorelease];
     CTCarrier *carrier = [networkInfo subscriberCellularProvider];
 
@@ -130,35 +128,6 @@ static Mixpanel *sharedInstance = nil;
     
     free(answer);
     return results;
-}
-
-+ (BOOL)wifiAvailable
-{
-    struct sockaddr_in sockAddr;
-    bzero(&sockAddr, sizeof(sockAddr));
-    sockAddr.sin_len = sizeof(sockAddr);
-    sockAddr.sin_family = AF_INET;
-
-    SCNetworkReachabilityRef nrRef = SCNetworkReachabilityCreateWithAddress(NULL, (struct sockaddr *)&sockAddr);
-    SCNetworkReachabilityFlags flags;
-    BOOL didRetrieveFlags = SCNetworkReachabilityGetFlags(nrRef, &flags);
-    if (!didRetrieveFlags) {
-        MixpanelDebug(@"%@ unable to fetch the network reachablity flags", self);
-    }
-
-    CFRelease(nrRef);
-
-    if (!didRetrieveFlags || (flags & kSCNetworkReachabilityFlagsReachable) != kSCNetworkReachabilityFlagsReachable) {
-        // unable to connect to a network (no signal or airplane mode activated)
-        return NO;
-    }
-
-    if ((flags & kSCNetworkReachabilityFlagsIsWWAN) == kSCNetworkReachabilityFlagsIsWWAN) {
-        // only a cellular network connection is available.
-        return NO;
-    }
-
-    return YES;
 }
 
 + (BOOL)inBackground
