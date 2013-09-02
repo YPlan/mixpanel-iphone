@@ -317,6 +317,23 @@
  @method
  
  @abstract
+ Do A/B testing with 3 tests
+ 
+ @discussion
+ This function will always return same result untill reset.
+ 
+ @param name            test name
+ @param A               test A
+ @param B               test B
+ @param C               test C
+ @param D               test D
+ */
+- (void)testWithName:(NSString *)name A:(void(^)(void))blockA B:(void(^)(void))blockB C:(void(^)(void))blockC D:(void(^)(void))blockD;
+
+/*!
+ @method
+ 
+ @abstract
  preset path for A/B testing
  
  @discussion

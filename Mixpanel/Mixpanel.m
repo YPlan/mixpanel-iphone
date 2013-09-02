@@ -467,6 +467,21 @@ static Mixpanel *sharedInstance = nil;
     }
 }
 
+- (void)testWithName:(NSString *)name A:(void(^)(void))blockA B:(void(^)(void))blockB C:(void(^)(void))blockC D:(void(^)(void))blockD
+{
+    NSUInteger testNo = [self testNoForTestWithName:name outOf:4];
+    
+    if( testNo == 1 ){
+        if( blockA != NULL ) blockA();
+    }else if( testNo == 2 ){
+        if( blockB != NULL ) blockB();
+    }else if( testNo == 3 ){
+        if( blockC != NULL ) blockC();
+    }else{
+        if( blockD != NULL ) blockD();
+    }
+}
+
 #pragma mark * Super property methods
 
 - (void)registerSuperProperties:(NSDictionary *)properties
