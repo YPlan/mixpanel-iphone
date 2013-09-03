@@ -327,10 +327,10 @@ static Mixpanel *sharedInstance = nil;
                 [self.peopleQueue addObject:r];
             }
             [self.people.unidentifiedQueue removeAllObjects];
+            [self archivePeople];
         }
         if ([Mixpanel inBackground]) {
             [self archiveProperties];
-            [self archivePeople];
         }
     }
 }
@@ -1085,7 +1085,8 @@ static Mixpanel *sharedInstance = nil;
 {
     @synchronized(self) {
         MixpanelDebug(@"%@ http response finished loading", self);
-        if (connection == self.eventsConnection) {
+        
+        if ( connection == self.eventsConnection ) {
             NSString *response = [[NSString alloc] initWithData:self.eventsResponseData encoding:NSUTF8StringEncoding];
             if ([response intValue] == 0) {
                 NSLog(@"%@ track api error: %@", self, response);
