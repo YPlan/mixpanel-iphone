@@ -795,7 +795,7 @@ static Mixpanel *sharedInstance = nil;
         NSString *filePath = [self peopleFilePath];
         MixpanelDebug(@"%@ archiving people data to %@: %@", self, filePath, self.peopleQueue);
         
-        NSArray *peopleQueue = [self.peopleQueue copy];
+        NSMutableArray *peopleQueue = [self.peopleQueue mutableCopy];
         if (![NSKeyedArchiver archiveRootObject:peopleQueue toFile:filePath]) {
             NSLog(@"%@ unable to archive people data", self);
         }
