@@ -799,6 +799,7 @@ static Mixpanel *sharedInstance = nil;
         if (![NSKeyedArchiver archiveRootObject:peopleQueue toFile:filePath]) {
             NSLog(@"%@ unable to archive people data", self);
         }
+        [peopleQueue release];
     }
 }
 
