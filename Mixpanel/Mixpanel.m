@@ -30,7 +30,6 @@
 
 #import "MPSurveyNavigationController.h"
 #import "Mixpanel.h"
-#import "NSData+MPBase64.h"
 #import "UIView+MPSnapshotImage.h"
 
 #define VERSION @"2.1.0"
@@ -376,7 +375,7 @@ static Mixpanel *sharedInstance = nil;
     NSString *b64String = @"";
     NSData *data = [self JSONSerializeObject:array];
     if (data) {
-        b64String = [data mp_base64EncodedString];
+        b64String = [data base64EncodedStringWithOptions:0];
         b64String = (id)CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault,
                                                                 (CFStringRef)b64String,
                                                                 NULL,
