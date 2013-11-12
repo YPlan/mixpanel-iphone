@@ -403,6 +403,25 @@
 
 /*!
  @method
+ 
+ @abstract
+ Registers super properties, overwriting ones that have already been set.
+ 
+ @discussion
+ Super properties, once registered, are automatically sent as properties for
+ all event tracking calls. They save you having to maintain and add a common
+ set of properties to your events. Property keys must be <code>NSString</code>
+ objects and values must be <code>NSString</code>, <code>NSNumber</code>,
+ <code>NSNull</code>, <code>NSArray</code>, <code>NSDictionary</code>,
+ <code>NSDate</code> or <code>NSURL</code> objects.
+ 
+ @param properties      properties dictionary
+ @param properties      applyToUnflushedEvents bool
+ */
+- (void)registerSuperProperties:(NSDictionary *)properties applyToUnflushedEvents:(BOOL)applyToUnflushedEvents;
+
+/*!
+ @method
 
  @abstract
  Registers super properties without overwriting ones that have already been

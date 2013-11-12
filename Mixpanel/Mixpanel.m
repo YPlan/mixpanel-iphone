@@ -539,6 +539,32 @@ static Mixpanel *sharedInstance = nil;
     });
 }
 
+- (void)registerSuperProperties:(NSDictionary *)properties applyToUnflushedEvents:(BOOL)applyToUnflushedEvents
+{
+    [self registerSuperProperties:properties];
+    
+    if( applyToUnflushedEvents ){
+        
+        dispatch_async(self.serialQueue, ^{
+            NSMutableArray *updatedEventsQueue = [NSMutableArray arrayWithCapacity:self.eventsQueue.count];
+            
+            for( NSDictionary *event in self.eventsQueue ){
+                
+                NSMutableDictionary *updatedEvent = [event mutableCopy];
+                NSMutableDictionary *properties = [[updatedEvent objectForKey:@"properties"] mutableCopy];
+                [properties addEntriesFromDictionary:self.superProperties];
+                
+                [updatedEvent setObject:properties forKey:@"properties"];
+                
+                [updatedEventsQueue addObject: updatedEvent];
+            }
+            
+            self.eventsQueue = updatedEventsQueue;
+        });
+        
+    }
+}
+
 - (void)registerSuperPropertiesOnce:(NSDictionary *)properties
 {
     [Mixpanel assertPropertyTypes:properties];
