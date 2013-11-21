@@ -555,8 +555,10 @@ static Mixpanel *sharedInstance = nil;
                 [properties addEntriesFromDictionary:self.superProperties];
                 
                 [updatedEvent setObject:properties forKey:@"properties"];
+                [properties release];
                 
                 [updatedEventsQueue addObject: updatedEvent];
+                [updatedEvent release];
             }
             
             self.eventsQueue = updatedEventsQueue;
