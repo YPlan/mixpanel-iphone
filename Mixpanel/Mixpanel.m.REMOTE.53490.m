@@ -35,6 +35,7 @@
 
 #import "MPSurveyNavigationController.h"
 #import "Mixpanel.h"
+#import "NSData+MPBase64.h"
 #import "UIView+MPSnapshotImage.h"
 
 #define VERSION @"2.2.0"
@@ -73,7 +74,6 @@
 @property (nonatomic, strong) NSArray *surveys;
 @property (nonatomic, strong) MPSurvey *currentlyShowingSurvey;
 @property (nonatomic, strong) NSMutableSet *shownSurveyCollections;
-@property(nonatomic,retain) NSMutableDictionary *abTests;
 
 @end
 
@@ -142,7 +142,6 @@ static Mixpanel *sharedInstance = nil;
         self.showNetworkActivityIndicator = YES;
         self.serverURL = @"https://api.mixpanel.com";
         self.distinctId = [self defaultDistinctId];
-        self.abTests = [NSMutableDictionary dictionary];
         self.superProperties = [NSMutableDictionary dictionary];
         self.automaticProperties = [self collectAutomaticProperties];
         self.eventsQueue = [NSMutableArray array];
@@ -154,7 +153,6 @@ static Mixpanel *sharedInstance = nil;
         [_dateFormatter setDateFormat:@"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"];
         [_dateFormatter setTimeZone:[NSTimeZone timeZoneWithAbbreviation:@"UTC"]];
 
-        self.testBucketID = 0;
         self.showSurveyOnActive = YES;
         self.checkForSurveysOnActive = YES;
         self.surveys = nil;
@@ -362,12 +360,12 @@ static Mixpanel *sharedInstance = nil;
     NSString *b64String = @"";
     NSData *data = [self JSONSerializeObject:array];
     if (data) {
-        b64String = [data base64EncodedStringWithOptions:0];
+        b64String = [data mp_base64EncodedString];
         b64String = (id)CFBridgingRelease(CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault,
-                                                                                  (CFStringRef)b64String,
-                                                                                  NULL,
-                                                                                  CFSTR("!*'();:@&=+$,/?%#[]"),
-                                                                                  kCFStringEncodingUTF8));
+                                                                (CFStringRef)b64String,
+                                                                NULL,
+                                                                CFSTR("!*'();:@&=+$,/?%#[]"),
+                                                                kCFStringEncodingUTF8));
     }
     return b64String;
 }
@@ -416,6 +414,7 @@ static Mixpanel *sharedInstance = nil;
     return distinctId;
 }
 
+
 - (void)identify:(NSString *)distinctId
 {
     if (distinctId == nil || distinctId.length == 0) {
@@ -435,29 +434,6 @@ static Mixpanel *sharedInstance = nil;
         }
         if ([Mixpanel inBackground]) {
             [self archiveProperties];
-        }
-    });
-}
-
-- (void)setAlias:(NSString *)alias
-{
-    dispatch_async(self.serialQueue, ^{
-        if ( !self.distinctId ) {
-            NSLog(@"%@ warning: Tried to set alias '%@' but no distinctId is set to associate.", self, alias);
-            return;
-        }
-        
-        NSMutableDictionary *p = [NSMutableDictionary dictionary];
-        [p setObject:self.apiToken forKey:@"token"];
-        [p setObject:self.distinctId forKey:@"distinct_id"];
-        [p setObject:alias forKey:@"alias"];
-        
-        NSDictionary *event = [NSDictionary dictionaryWithObjectsAndKeys:@"$create_alias", @"event", [NSDictionary dictionaryWithDictionary:p], @"properties", nil];
-        MixpanelLog(@"%@ queueing event: %@", self, event);
-        [self.eventsQueue addObject:event];
-        
-        if ( [Mixpanel inBackground] ) {
-            [self archiveEvents];
         }
     });
 }
@@ -504,11 +480,6 @@ static Mixpanel *sharedInstance = nil;
         if (properties) {
             [p addEntriesFromDictionary:properties];
         }
-        
-        [self.abTests enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSNumber *test, BOOL *stop) {
-            [p setObject:[NSString stringWithFormat:@"%c", [test integerValue]] forKey:key];
-        }];
-        
         NSDictionary *e = @{@"event": event, @"properties": [NSDictionary dictionaryWithDictionary:p]};
         MixpanelLog(@"%@ queueing event: %@", self, e);
         [self.eventsQueue addObject:e];
@@ -533,32 +504,6 @@ static Mixpanel *sharedInstance = nil;
             [self archiveProperties];
         }
     });
-}
-
-- (void)registerSuperProperties:(NSDictionary *)properties applyToUnflushedEvents:(BOOL)applyToUnflushedEvents
-{
-    [self registerSuperProperties:properties];
-    
-    if( applyToUnflushedEvents ){
-        
-        dispatch_async(self.serialQueue, ^{
-            NSMutableArray *updatedEventsQueue = [NSMutableArray arrayWithCapacity:self.eventsQueue.count];
-            
-            for( NSDictionary *event in self.eventsQueue ){
-                
-                NSMutableDictionary *updatedEvent = [event mutableCopy];
-                NSMutableDictionary *properties = [[updatedEvent objectForKey:@"properties"] mutableCopy];
-                [properties addEntriesFromDictionary:self.superProperties];
-                
-                [updatedEvent setObject:properties forKey:@"properties"];
-                
-                [updatedEventsQueue addObject: updatedEvent];
-            }
-            
-            self.eventsQueue = updatedEventsQueue;
-        });
-        
-    }
 }
 
 - (void)registerSuperPropertiesOnce:(NSDictionary *)properties
@@ -612,16 +557,6 @@ static Mixpanel *sharedInstance = nil;
     });
 }
 
-- (void)clearTests
-{
-    dispatch_async(self.serialQueue, ^{
-        self.abTests = [NSMutableDictionary dictionary];
-        if ([Mixpanel inBackground]) {
-            [self archiveTests];
-        }
-    });
-}
-
 - (void)clearSuperProperties
 {
     dispatch_async(self.serialQueue, ^{
@@ -642,85 +577,12 @@ static Mixpanel *sharedInstance = nil;
     dispatch_async(self.serialQueue, ^{
         self.distinctId = [self defaultDistinctId];
         self.nameTag = nil;
-        self.abTests = [NSMutableDictionary dictionary];
         self.superProperties = [NSMutableDictionary dictionary];
         self.people.distinctId = nil;
         self.people.unidentifiedQueue = [NSMutableArray array];
         self.eventsQueue = [NSMutableArray array];
         self.peopleQueue = [NSMutableArray array];
         [self archiveFromSerialQueue];
-    });
-}
-
-#pragma mark * A/B Testing
-
-- (void)setPath:(NSString *)path forTestWithName:(NSString *)name
-{
-    dispatch_async(self.serialQueue, ^{
-        [self.abTests setObject:[NSNumber numberWithInt: [[path uppercaseString] characterAtIndex:0]] forKey:name];
-    });
-}
-
-- (NSUInteger)testNoForTestWithName:(NSString *)name outOf:(NSUInteger)outOf
-{
-    @synchronized(self) {
-        if( [self.abTests objectForKey:name] ){
-            return [[self.abTests objectForKey:name] unsignedIntegerValue] -64;
-        }
-        
-        NSUInteger testNo = (( self.testBucketID != 0 )?self.testBucketID:arc4random()) %outOf +1;
-        
-        [self.abTests setObject:[NSNumber numberWithInt:testNo +64] forKey:name];
-        if ([Mixpanel inBackground]) {
-            [self archiveTests];
-        }
-        
-        return testNo;
-    }
-}
-
-- (void)testWithName:(NSString *)name A:(void(^)(void))blockA B:(void(^)(void))blockB
-{
-    dispatch_async(self.serialQueue, ^{
-        NSUInteger testNo = [self testNoForTestWithName:name outOf:2];
-        
-        if( testNo == 1 ){
-            if( blockA != NULL ) blockA();
-        }else{
-            if( blockB != NULL ) blockB();
-        }
-    });
-}
-
-- (void)testWithName:(NSString *)name A:(void(^)(void))blockA B:(void(^)(void))blockB C:(void(^)(void))blockC
-{
-    dispatch_async(self.serialQueue, ^{
-        NSUInteger testNo = [self testNoForTestWithName:name outOf:3];
-        
-        if( testNo == 1 ){
-            if( blockA != NULL ) blockA();
-        }else if( testNo == 2 ){
-            if( blockB != NULL ) blockB();
-        }else{
-            if( blockC != NULL ) blockC();
-        }
-    });
-}
-
-- (void)testWithName:(NSString *)name A:(void(^)(void))blockA B:(void(^)(void))blockB C:(void(^)(void))blockC D:(void(^)(void))blockD
-{
-    dispatch_async(self.serialQueue, ^{
-        NSUInteger testNo = [self testNoForTestWithName:name outOf:4];
-        
-        if( testNo == 1 ){
-            if( blockA != NULL ) blockA();
-        }else if( testNo == 2 ){
-            if( blockB != NULL ) blockB();
-        }else if( testNo == 3 ){
-            if( blockC != NULL ) blockC();
-        }else{
-            if( blockD != NULL ) blockD();
-        }
     });
 }
 
@@ -881,11 +743,6 @@ static Mixpanel *sharedInstance = nil;
     return [self filePathForData:@"people"];
 }
 
-- (NSString *)testsFilePath
-{
-    return [self filePathForData:@"tests"];
-}
-
 - (NSString *)propertiesFilePath
 {
     return [self filePathForData:@"properties"];
@@ -903,7 +760,6 @@ static Mixpanel *sharedInstance = nil;
 {
     [self archiveEvents];
     [self archivePeople];
-    [self archiveTests];
     [self archiveProperties];
 }
 
@@ -922,15 +778,6 @@ static Mixpanel *sharedInstance = nil;
     MixpanelDebug(@"%@ archiving people data to %@: %@", self, filePath, self.peopleQueue);
     if (![NSKeyedArchiver archiveRootObject:self.peopleQueue toFile:filePath]) {
         NSLog(@"%@ unable to archive people data", self);
-    }
-}
-
-- (void)archiveTests
-{
-    NSString *filePath = [self testsFilePath];
-    MixpanelDebug(@"%@ archiving tests data to %@: %@", self, filePath, self.abTests);
-    if (![NSKeyedArchiver archiveRootObject:self.abTests toFile:filePath]) {
-        NSLog(@"%@ unable to archive tests data", self);
     }
 }
 
@@ -954,7 +801,6 @@ static Mixpanel *sharedInstance = nil;
 {
     [self unarchiveEvents];
     [self unarchivePeople];
-    [self unarchiveTests];
     [self unarchiveProperties];
 }
 
@@ -989,23 +835,6 @@ static Mixpanel *sharedInstance = nil;
     }
     if (!self.peopleQueue) {
         self.peopleQueue = [NSMutableArray array];
-    }
-}
-
-- (void)unarchiveTests
-{
-    NSString *filePath = [self testsFilePath];
-    NSMutableDictionary *tests = nil;
-    @try {
-        tests = [NSKeyedUnarchiver unarchiveObjectWithFile:filePath];
-        MixpanelDebug(@"%@ unarchived tests data: %@", self, tests);
-    }
-    @catch (NSException *exception) {
-        NSLog(@"%@ unable to unarchive tests data, starting fresh", self);
-        [[NSFileManager defaultManager] removeItemAtPath:filePath error:nil];
-    }
-    if (tests) {
-        self.abTests = tests;
     }
 }
 
