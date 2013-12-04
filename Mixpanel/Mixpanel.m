@@ -59,8 +59,8 @@
 @property (atomic, strong) MixpanelPeople *people;
 @property (atomic, copy) NSString *distinctId;
 
-@property (nonatomic, copy) NSString *apiToken;
-@property (atomic, strong) NSDictionary *superProperties;
+@property (nonatomic,   copy) NSString *apiToken;
+@property (atomic,    strong) NSDictionary *superProperties;
 @property (nonatomic, strong) NSMutableDictionary *automaticProperties; // mutable because we update $wifi when reachability changes
 @property (nonatomic, strong) NSTimer *timer;
 @property (nonatomic, strong) NSMutableArray *eventsQueue;
@@ -73,7 +73,7 @@
 @property (nonatomic, strong) NSArray *surveys;
 @property (nonatomic, strong) MPSurvey *currentlyShowingSurvey;
 @property (nonatomic, strong) NSMutableSet *shownSurveyCollections;
-@property(nonatomic,retain) NSMutableDictionary *abTests;
+@property (nonatomic, strong) NSMutableDictionary *abTests;
 
 @end
 
