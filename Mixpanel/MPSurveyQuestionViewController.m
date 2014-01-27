@@ -84,6 +84,7 @@ typedef NS_ENUM(NSInteger, MPSurveyTableViewCellPosition) {
         CGSize sizeToFit;
 
         // Use boundingRectWithSize for iOS 7 and above, sizeWithFont otherwise.
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 70000
         if ([[[UIDevice currentDevice] systemVersion] compare:@"7.0" options:NSNumericSearch] != NSOrderedAscending) {
             sizeToFit = [_prompt.text boundingRectWithSize:constraintSize
                                                        options:NSStringDrawingUsesLineFragmentOrigin
@@ -94,6 +95,11 @@ typedef NS_ENUM(NSInteger, MPSurveyTableViewCellPosition) {
                                  constrainedToSize:constraintSize
                                      lineBreakMode:_prompt.lineBreakMode];
         }
+#else
+        sizeToFit = [_prompt.text sizeWithFont:font
+                             constrainedToSize:constraintSize
+                                 lineBreakMode:_prompt.lineBreakMode];
+#endif
 
         if (sizeToFit.height <= promptHeight) {
             promptHeight = sizeToFit.height;
@@ -222,7 +228,7 @@ typedef NS_ENUM(NSInteger, MPSurveyTableViewCellPosition) {
     CGColorRef outerColor = [UIColor colorWithWhite:1 alpha:0].CGColor;
     CGColorRef innerColor = [UIColor colorWithWhite:1 alpha:1].CGColor;
     fadeLayer.colors = @[(__bridge id)outerColor, (__bridge id)innerColor, (__bridge id)innerColor, (__bridge id)outerColor];
-    // add 20 pixels of fade in and out at top and bottom of table view container
+    // add 44 pixels of fade in and out at top and bottom of table view container
     CGFloat offset = 44 / _tableContainer.bounds.size.height;
     fadeLayer.locations = @[@0, @(0 + offset), @(1 - offset), @1];
     fadeLayer.bounds = _tableContainer.bounds;
@@ -307,11 +313,6 @@ typedef NS_ENUM(NSInteger, MPSurveyTableViewCellPosition) {
     if (cell.isChecked) {
         [cell setChecked:NO animatedWithCompletion:nil];
     }
-}
-
-- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
-{
-    return (floor(NSFoundationVersionNumber) <= NSFoundationVersionNumber_iOS_6_1) ? 0 : 0.1f; // for some reason, 0 doesn't work in ios7
 }
 
 @end
@@ -402,7 +403,7 @@ typedef NS_ENUM(NSInteger, MPSurveyTableViewCellPosition) {
     _promptTopSpace.constant = promptTopSpace;
     [UIView animateWithDuration:duration
                           delay:0
-                        options:curve | UIViewKeyframeAnimationOptionBeginFromCurrentState
+                        options:curve | UIViewAnimationOptionBeginFromCurrentState
                      animations:^{
                          self.prompt.alpha = promptAlpha;
                          [self.view layoutIfNeeded];
@@ -418,7 +419,7 @@ typedef NS_ENUM(NSInteger, MPSurveyTableViewCellPosition) {
     _promptTopSpace.constant = 15;
     [UIView animateWithDuration:duration
                           delay:0
-                        options:curve | UIViewKeyframeAnimationOptionBeginFromCurrentState
+                        options:curve | UIViewAnimationOptionBeginFromCurrentState
                      animations:^{
                          self.prompt.alpha = 1;
                          [self.view layoutIfNeeded];

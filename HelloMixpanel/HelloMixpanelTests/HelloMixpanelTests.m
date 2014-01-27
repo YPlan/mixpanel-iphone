@@ -1,24 +1,7 @@
-//
-//  HelloMixpanelTests.m
-//  HelloMixpanelTests
-//
-// Copyright 2012 Mixpanel
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 #import "HelloMixpanelTests.h"
 
 #import "Mixpanel.h"
+#import "MPNotification.h"
 #import "MPSurvey.h"
 #import "MPSurveyQuestion.h"
 #import "HTTPServer.h"
@@ -493,13 +476,6 @@
     STAssertEqualObjects(self.mixpanel.people.distinctId, @"d1", @"custom people distinct id archive failed");
     STAssertTrue(self.mixpanel.peopleQueue.count == 1, @"pending people queue archive failed");
     NSFileManager *fileManager = [NSFileManager defaultManager];
-    STAssertTrue([fileManager fileExistsAtPath:[self.mixpanel eventsFilePath]], @"events archive file not found");
-    STAssertTrue([fileManager fileExistsAtPath:[self.mixpanel peopleFilePath]], @"people archive file not found");
-    STAssertTrue([fileManager fileExistsAtPath:[self.mixpanel propertiesFilePath]], @"properties archive file not found");
-    // no existing file
-    [fileManager removeItemAtPath:[self.mixpanel eventsFilePath] error:nil];
-    [fileManager removeItemAtPath:[self.mixpanel peopleFilePath] error:nil];
-    [fileManager removeItemAtPath:[self.mixpanel propertiesFilePath] error:nil];
     STAssertFalse([fileManager fileExistsAtPath:[self.mixpanel eventsFilePath]], @"events archive file not removed");
     STAssertFalse([fileManager fileExistsAtPath:[self.mixpanel peopleFilePath]], @"people archive file not removed");
     STAssertFalse([fileManager fileExistsAtPath:[self.mixpanel propertiesFilePath]], @"properties archive file not removed");
@@ -923,6 +899,84 @@
     STAssertNil([MPSurveyQuestion questionWithJSONObject:m], nil);
 }
 
+- (void)testParseNotification
+{
+    // invalid bad title
+    NSDictionary *invalid = @{@"id": @3,
+                              @"title": @5,
+                              @"type": @"takeover",
+                              @"body": @"Hi!",
+                              @"cta_url": @"blah blah blah",
+                              @"cta": [NSNull null],
+                              @"image_url": @[]};
+
+    STAssertNil([MPNotification notificationWithJSONObject:invalid], nil);
+
+    // valid
+    NSDictionary *o = @{@"id": @3,
+                        @"message_id": @1,
+                        @"title": @"title",
+                        @"type": @"takeover",
+                        @"body": @"body",
+                        @"cta": @"cta",
+                        @"cta_url": @"maps://",
+                        @"image_url": @"http://mixpanel.com"};
+
+    STAssertNotNil([MPNotification notificationWithJSONObject:o], nil);
+
+    // nil
+    STAssertNil([MPNotification notificationWithJSONObject:nil], nil);
+
+    // empty
+    STAssertNil([MPNotification notificationWithJSONObject:@{}], nil);
+
+    // garbage keys
+    STAssertNil([MPNotification notificationWithJSONObject:@{@"gar": @"bage"}], nil);
+
+    NSMutableDictionary *m;
+
+    // invalid id
+    m = [NSMutableDictionary dictionaryWithDictionary:o];
+    m[@"id"] = @NO;
+    STAssertNil([MPNotification notificationWithJSONObject:m], nil);
+
+    // invalid title
+    m = [NSMutableDictionary dictionaryWithDictionary:o];
+    m[@"title"] = @NO;
+    STAssertNil([MPNotification notificationWithJSONObject:m], nil);
+
+    // invalid body
+    m = [NSMutableDictionary dictionaryWithDictionary:o];
+    m[@"body"] = @NO;
+    STAssertNil([MPNotification notificationWithJSONObject:m], nil);
+
+    // invalid cta
+    m = [NSMutableDictionary dictionaryWithDictionary:o];
+    m[@"cta"] = @NO;
+    STAssertNil([MPNotification notificationWithJSONObject:m], nil);
+
+    // invalid cta_url
+    m = [NSMutableDictionary dictionaryWithDictionary:o];
+    m[@"cta_url"] = @NO;
+    STAssertNil([MPNotification notificationWithJSONObject:m], nil);
+
+    // invalid image_urls
+    m = [NSMutableDictionary dictionaryWithDictionary:o];
+    m[@"image_url"] = @NO;
+    STAssertNil([MPNotification notificationWithJSONObject:m], nil);
+
+    // invalid image_urls item
+    m = [NSMutableDictionary dictionaryWithDictionary:o];
+    m[@"image_url"] = @[@NO];
+    STAssertNil([MPNotification notificationWithJSONObject:m], nil);
+
+    // an image with a space in the URL should be % encoded
+    m = [NSMutableDictionary dictionaryWithDictionary:o];
+    m[@"image_url"] = @"http://test.com/animagewithaspace init.jpg";
+    STAssertNotNil([MPNotification notificationWithJSONObject:m], nil);
+
+}
+
 - (void)testNoShowSurveyOnPresentingVC
 {
     NSDictionary *o = @{@"id": @3,
@@ -970,6 +1024,5 @@
 
     STAssertTrue([[self topViewController] isKindOfClass:[MPSurveyNavigationController class]], @"Survey was not presented");
 }
-
 
 @end
