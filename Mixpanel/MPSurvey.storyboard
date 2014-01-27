@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="4514" systemVersion="12F45" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" initialViewController="RIP-po-dgx">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="5037.2" systemVersion="13B42" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" initialViewController="RIP-po-dgx">
     <dependencies>
         <deployment defaultVersion="1536" identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3746"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3733"/>
     </dependencies>
     <scenes>
         <!--Survey Navigation Controller-->
@@ -101,22 +101,12 @@
                                             <action selector="dismiss" destination="RIP-po-dgx" eventType="touchUpInside" id="o74-Ja-Cor"/>
                                         </connections>
                                     </button>
-                                    <imageView opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" image="MPLogo.png" translatesAutoresizingMaskIntoConstraints="NO" id="tHb-kq-3y4">
-                                        <rect key="frame" x="15" y="11" width="66" height="22"/>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                                        <constraints>
-                                            <constraint firstAttribute="width" constant="66" id="DeQ-2M-CRw"/>
-                                            <constraint firstAttribute="height" constant="22" id="RZa-E3-gm9"/>
-                                        </constraints>
-                                    </imageView>
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 <constraints>
                                     <constraint firstAttribute="trailing" secondItem="8vP-xd-w4j" secondAttribute="trailing" id="BOS-xG-STD"/>
                                     <constraint firstItem="8vP-xd-w4j" firstAttribute="top" secondItem="0dH-sL-neW" secondAttribute="top" id="CeE-TT-bZQ"/>
-                                    <constraint firstAttribute="centerY" secondItem="tHb-kq-3y4" secondAttribute="centerY" id="Czs-Nc-r4M"/>
                                     <constraint firstAttribute="bottom" secondItem="8vP-xd-w4j" secondAttribute="bottom" id="Q7c-AG-Vej"/>
-                                    <constraint firstItem="tHb-kq-3y4" firstAttribute="leading" secondItem="0dH-sL-neW" secondAttribute="leading" constant="15" id="qB4-79-zGp"/>
                                     <constraint firstAttribute="height" constant="44" id="sNH-QZ-iV0"/>
                                 </constraints>
                             </view>
@@ -140,7 +130,6 @@
                         <outlet property="exitButton" destination="8vP-xd-w4j" id="Tcm-85-BiT"/>
                         <outlet property="footer" destination="0dH-sL-neW" id="QTr-ST-cRT"/>
                         <outlet property="header" destination="vot-vr-03f" id="SXb-ri-C6x"/>
-                        <outlet property="logo" destination="tHb-kq-3y4" id="81p-Zv-kbC"/>
                         <outlet property="nextButton" destination="kZ0-zi-Urm" id="dbM-en-2LY"/>
                         <outlet property="pageNumberLabel" destination="JbJ-sK-oCv" id="RmX-Iu-HZi"/>
                         <outlet property="previousButton" destination="Rrk-0y-OIL" id="FTv-4I-n0S"/>
@@ -392,7 +381,6 @@
         <image name="MPArrowRight.png" width="24" height="16"/>
         <image name="MPCheckmark.png" width="13" height="14"/>
         <image name="MPDismissKeyboard.png" width="30" height="14"/>
-        <image name="MPLogo.png" width="66" height="22"/>
     </resources>
     <simulatedMetricsContainer key="defaultSimulatedMetrics">
         <simulatedStatusBarMetrics key="statusBar"/>
