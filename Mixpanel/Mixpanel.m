@@ -682,47 +682,41 @@ static Mixpanel *sharedInstance = nil;
 
 - (void)testWithName:(NSString *)name A:(void(^)(void))blockA B:(void(^)(void))blockB
 {
-    dispatch_async(self.serialQueue, ^{
-        NSUInteger testNo = [self testNoForTestWithName:name outOf:2];
-        
-        if( testNo == 1 ){
-            if( blockA != NULL ) blockA();
-        }else{
-            if( blockB != NULL ) blockB();
-        }
-    });
+    NSUInteger testNo = [self testNoForTestWithName:name outOf:2];
+    
+    if( testNo == 1 ){
+        if( blockA != NULL ) blockA();
+    }else{
+        if( blockB != NULL ) blockB();
+    }
 }
 
 - (void)testWithName:(NSString *)name A:(void(^)(void))blockA B:(void(^)(void))blockB C:(void(^)(void))blockC
 {
-    dispatch_async(self.serialQueue, ^{
-        NSUInteger testNo = [self testNoForTestWithName:name outOf:3];
-        
-        if( testNo == 1 ){
-            if( blockA != NULL ) blockA();
-        }else if( testNo == 2 ){
-            if( blockB != NULL ) blockB();
-        }else{
-            if( blockC != NULL ) blockC();
-        }
-    });
+    NSUInteger testNo = [self testNoForTestWithName:name outOf:3];
+    
+    if( testNo == 1 ){
+        if( blockA != NULL ) blockA();
+    }else if( testNo == 2 ){
+        if( blockB != NULL ) blockB();
+    }else{
+        if( blockC != NULL ) blockC();
+    }
 }
 
 - (void)testWithName:(NSString *)name A:(void(^)(void))blockA B:(void(^)(void))blockB C:(void(^)(void))blockC D:(void(^)(void))blockD
 {
-    dispatch_async(self.serialQueue, ^{
-        NSUInteger testNo = [self testNoForTestWithName:name outOf:4];
-        
-        if( testNo == 1 ){
-            if( blockA != NULL ) blockA();
-        }else if( testNo == 2 ){
-            if( blockB != NULL ) blockB();
-        }else if( testNo == 3 ){
-            if( blockC != NULL ) blockC();
-        }else{
-            if( blockD != NULL ) blockD();
-        }
-    });
+    NSUInteger testNo = [self testNoForTestWithName:name outOf:4];
+    
+    if( testNo == 1 ){
+        if( blockA != NULL ) blockA();
+    }else if( testNo == 2 ){
+        if( blockB != NULL ) blockB();
+    }else if( testNo == 3 ){
+        if( blockC != NULL ) blockC();
+    }else{
+        if( blockD != NULL ) blockD();
+    }
 }
 
 #pragma mark - Network control
