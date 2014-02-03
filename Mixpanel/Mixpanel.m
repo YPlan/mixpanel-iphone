@@ -657,9 +657,9 @@ static Mixpanel *sharedInstance = nil;
 
 - (void)setPath:(NSString *)path forTestWithName:(NSString *)name
 {
-    dispatch_async(self.serialQueue, ^{
+    @synchronized(self) {
         [self.abTests setObject:[NSNumber numberWithInt: [[path uppercaseString] characterAtIndex:0]] forKey:name];
-    });
+    }
 }
 
 - (NSUInteger)testNoForTestWithName:(NSString *)name outOf:(NSUInteger)outOf
